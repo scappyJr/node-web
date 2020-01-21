@@ -1,6 +1,17 @@
 var express = require("express");
 var app = express(); // express 가 함수이기 때문에 호출하여 받은 리턴값을 app 에 담아 사용
 var bodyParser = require("body-parser"); // post 로 요청된 body 를 쉽게 추출 가능한 모듈
+var mysql = require("mysql");
+
+var connection = mysql.createConnection({
+  host: "localhost",
+  port: 3307,
+  user: "root",
+  password: "apcnfl77",
+  database: "nodedb"
+});
+
+connection.connect();
 
 app.listen(3000, function() {
   // 비동기로 동작
@@ -30,8 +41,22 @@ app.post("/email_post", function(req, res) {
 });
 
 app.post("/ajax_send_email", function(req, res) {
-  console.log(req.body.email);
-  // check validation about input value => select db
-  var responseData = { result: "OK", email: req.body.email };
-  res.json(responseData);
+  var email = req.body.email;
+  var responseData = {};
+
+  var query = connection.query(
+    "SELECT name FROM user WHERE email = '" + email + "'",
+    function(err, rows) {
+      // callback 함수
+      if (err) throw err;
+      if (rows[0]) {
+        responseData.result = "ok";
+        responseData.name = rows[0].name;
+      } else {
+        responseData.result = "none";
+        responseData.name = "";
+      }
+      res.json(responseData);
+    }
+  );
 });
