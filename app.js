@@ -2,6 +2,10 @@ var express = require("express");
 var app = express(); // express 가 함수이기 때문에 호출하여 받은 리턴값을 app 에 담아 사용
 var bodyParser = require("body-parser"); // post 로 요청된 body 를 쉽게 추출 가능한 모듈
 var router = require("./router/index");
+var passport = require("passport");
+var LocalStrategy = require("passport-local").Strategy;
+var session = require("express-session");
+var flash = require("connect-flash");
 
 app.listen(3000, function() {
   // 비동기로 동작
