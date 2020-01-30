@@ -18,5 +18,15 @@ app.use(bodyParser.json()); // json 파싱을 지원
 app.use(bodyParser.urlencoded({ extended: true })); // js 의 Object 를 상속 받아 obj.toString() 과 같은 메소드 사용이 가능
 app.set("view engine", "ejs"); // view 엔진으로 ejs 를 사용할 것임을 지정
 
+// express-session 설정
+app.use(session({
+  secret: "keyboard cat",
+  resave: false,
+  saveUninitialized: true
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(flash());
+
 // url routing
 app.use(router); // app.use("/", router); 와 같은 의미
