@@ -3,11 +3,11 @@ var app = express();
 var router = express.Router();
 var path = require("path");
 
+// main page 는 login 한 상태일 때만 (= 세션 정보가 있을 때만) 접근이 가능하게 한다.
 router.get("/", function(req, res) {
   // get 요청일 경우 req.param("email") 이렇게 파라미터 추출 가능
-  console.log("[info] main js loaded...", req.user);
   var id = req.user;
-  // res.sendFile(path.join(__dirname, "../../public/main.html"));
+  if (!id) res.render("login.ejs");
   res.render("main.ejs", { "id" : id });
 });
 

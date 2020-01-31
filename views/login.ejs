@@ -15,7 +15,6 @@
 
 <body>
   <h1>Login my website!</h1>
-  <section class="messages"><%= message %></section>
 
   <form action="/login" method="post">
     email : <input type="email" name="email" id="email" /><br />
@@ -27,7 +26,8 @@
   <div class="result"></div>
 
   <script>
-    document.querySelector(".ajaxsend").addEventListener("click", function () {
+    document.querySelector(".ajaxsend").addEventListener("click", function (e) {
+      e.preventDefault();
       var email = document.querySelector("#email").value;
       var password = document.querySelector("#password").value;
       sendAjax("http://localhost:3000/login", { "email": email, "password": password });
@@ -45,7 +45,12 @@
         var resultDiv = document.querySelector(".result");
 
         if (result.email) {
-          resultDiv.innerHTML = "Welcome, " + result.email;
+          // resultDiv.innerHTML = "Welcome, " + result.email;
+          window.location.href = "/main";
+
+        } else if (xhr.status === 401) {
+          resultDiv.innerHTML = result + '<div class="signup"><a href="/join">Sign up</a></div>';
+
         } else {
           resultDiv.innerHTML = result;
         }
