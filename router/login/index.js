@@ -23,7 +23,7 @@ router.get("/", function(req, res) {
 
   if (errMsg) msg = errMsg;
 
-  res.render("join.ejs", { "message" : msg });
+  res.render("login.ejs", { "message" : msg });
 });
 
 // session 에 user 정보 저장
@@ -40,7 +40,7 @@ passport.deserializeUser(function(id, done) {
   done(null, id);
 });
 
-passport.use("local-join", new LocalStrategy({
+passport.use("local-login", new LocalStrategy({
     usernameField: "email",
     passwordField: "password",
     passReqToCallback: true
@@ -48,46 +48,29 @@ passport.use("local-join", new LocalStrategy({
     var query = connection.query("SELECT * FROM USER WHERE email = ?", [email], function(err, rows) {
       if (err) return done(err);
 
-      if (rows.length) {
-        console.log("existed user!");
-        return done(null, false, { message: "Your email is already used."});
-      } else {
-        console.log("available user!");
-        var sql = { email: email, pw: password, name : "" };
-        var query = connection.query("INSERT INTO USER SET ?", sql, function(err, rows) {
-          if (err) { throw err; }
-          return done(null, { "email" : email, "id" : rows.insertId });
-        });
+      if (rows.length) {  // 로그인 성공
+        console.log("login success!");
+        return done(null, { "email" : email, "id" : rows[0].uid });
+
+      } else {  // 로그인 실패
+        console.log("login fail!");
+        return done(null, false, { "message" : "Your login info is not found T.T"});
       }
     })
   })
 );
 
-router.post("/", passport.authenticate("local-join", {
-  successRedirect: "/main",
-  failureRedirect: "/join",
-  failureFlash: true
-}));
+// Ajax 요청 의 경우 json 형태로 응답하기를 원함 -> custom callback 이용
+router.post("/", function(req, res, next) {
+  passport.authenticate("local-login", function(err, user, info) {
+    if (err) res.status(500).json(err);
+    if (!user) return res.status(401).json(info.message);
 
-/* router.post("/", function(req, res) {
-  var body = req.body;
-  var email = body.email;
-  var name = body.name;
-  var pw = body.password;
-
-  var sql = {
-    email: email,
-    name: name,
-    pw: pw
-  };
-
-  var query = connection.query("INSERT INTO USER SET ?", sql, function(err, rows) {
-    if (err) {
-      throw err;
-    }
-    res.render("welcome.ejs", { "name" : name, "id" : rows.insertId });
-  });
+    req.logIn(user, function(err) {
+      if (err) { return next(err); }
+      return res.json(user);
+    });
+  })(req, res, next);
 });
-*/
 
 module.exports = router;
